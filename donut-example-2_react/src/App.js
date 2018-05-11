@@ -1,72 +1,154 @@
-import React, { Component } from 'react';
-import { scaleOrdinal, schemeCategory20, arc, pie, easeExpOut } from 'd3';
-import NodeGroup from 'react-move/NodeGroup';
+import React, { Component } from "react";
+import {
+  scaleOrdinal,
+  arc,
+  pie,
+  easeExpOut,
+  shuffle
+} from "d3";
+import NodeGroup from "react-move/NodeGroup";
+import { sortBy } from "lodash";
 
-const width = 960;
-const height = 500;
-const outerRadius = Math.min(width, height) * .5 - 10;
-const innerRadius = 0;
+const colors = scaleOrdinal().range([
+  "#a6cee3",
+  "#1f78b4",
+  "#b2df8a",
+  "#33a02c",
+  "#fb9a99",
+  "#e31a1c",
+  "#fdbf6f",
+  "#ff7f00",
+  "#cab2d6",
+  "#6a3d9a"
+]);
 
-const colorCreator = scaleOrdinal(schemeCategory20);
+//  SVG Layout
+const view = [510, 510]; // [width, height]
+const trbl = [10, 10, 10, 10]; // [top, right, bottom, left] margins
 
-const arcCreator = 
-  arc()
-  .innerRadius(innerRadius)
-  .outerRadius(outerRadius)
+// Adjusted dimensions [width, height]
+const dims = [
+  view[0] - trbl[1] - trbl[3],
+  view[1] - trbl[0] - trbl[2]
+];
 
-const pieCreator = 
-  pie()
+const mockData = [
+  {
+    name: "Linktype"
+  },
+  {
+    name: "Quaxo"
+  },
+  {
+    name: "Skynoodle"
+  },
+  {
+    name: "Realmix"
+  },
+  {
+    name: "Jetpulse"
+  },
+  {
+    name: "Chatterbridge"
+  },
+  {
+    name: "Riffpedia"
+  },
+  {
+    name: "Layo"
+  },
+  {
+    name: "Oyoba"
+  },
+  {
+    name: "Ntags"
+  }
+];
+
+let counter = 0;
+
+const radius = dims[1] / 2 * 0.7;
+
+const pieLayout = pie()
+  .value(d => d.value)
   .sort(null);
 
+const innerArcPath = arc()
+  .innerRadius(radius * 0.4)
+  .outerRadius(radius * 1.0);
+
+function getRandom(min, max) {
+  return Math.floor(Math.random() * (max - (min + 1))) + min;
+}
+
+function getArcs() {
+  const data = shuffle(mockData).map(({ name }) => ({
+    name,
+    value: getRandom(10, 100)
+  }));
+
+  return pieLayout(sortBy(data, d => d.name));
+}
+
 class App extends Component {
-  constructor() {
-    super();
-    this.state = {
-      items: [
-        { name: "Apples", qty: 3 },
-        { name: "Coconuts", qty: 12 },
-        { name: "Kumquats", qty: 9 }
-      ]
-    };
-  }
+  state = {
+    arcs: getArcs()
+  };
+
+  update = e => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    this.setState(() => ({
+      arcs: getArcs()
+    }));
+  };
 
   render() {
-    const colors = this.state.items.map((item, i) => colorCreator(i));
-    // modify this to index onto qty property instead of intermediate map
-    const pieSlices = pieCreator(this.state.items.map(item => item.qty))
-    const arcs = pieSlices.map(slice => arcCreator(slice))
+    const { arcs } = this.state;
 
-    const chartData = {colors, pieSlices, arcs};
+    // console.log({arcs})
 
     return (
       <div>
-        <svg width={width} height={height}>
-          <g transform={`translate(${width/2}, ${height/2})`}>
-          <NodeGroup
-              data={chartData}
-              keyAccessor={(d, i) => i}
-
+        <button onClick={this.update}>Update</button>
+        <svg height={dims[0]} width={dims[1]}>
+          <g transform={`translate(${dims[0] / 2}, ${dims[1] / 2})`}>
+            <NodeGroup
+              data={arcs}
+              keyAccessor={d => d.data.name}
               start={({ startAngle }) => ({
                 startAngle,
-                endAngle: startAngle,
+                endAngle: startAngle
               })}
-
               enter={({ endAngle }) => ({
                 endAngle: [endAngle],
-                timing: { duration: 500, delay: 350, ease: easeExpOut },
+                timing: { duration: 500, delay: 350, ease: easeExpOut }
               })}
-
               update={({ startAngle, endAngle }) => ({
                 startAngle: [startAngle],
                 endAngle: [endAngle],
-                timing: { duration: 350, ease: easeExpOut },
+                timing: { duration: 2000, ease: easeExpOut }
               })}
             >
-              {/* {
-                this.state.items.map((item, i) => 
-                  <path key={i} fill={colors[i]} d={arcs[i]}></path>
-                )
-              } */}
+              {nodes => {
+                console.log(++counter)
+                return (
+                  <g>
+                    {nodes.map(({ key, data, state }) => {
+                      return (
+                        <g key={key}>
+                          <path
+                            d={innerArcPath(state)}
+                            fill={colors(data.data.name)}
+                            opacity={0.9}
+                          />
+                        </g>
+                      );
+                    })}
+                  </g>
+                );
+              }}
             </NodeGroup>
           </g>
         </svg>
