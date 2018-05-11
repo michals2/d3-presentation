@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "d3": "4.13.0",
+    "lodash": "^4.17.10",
     "react": "^16.3.2",
     "react-dom": "^16.3.2",
     "react-move": "^2.7.0",
