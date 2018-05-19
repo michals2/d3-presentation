@@ -4,32 +4,21 @@ import {
   arc,
   pie,
   easeExpOut,
-  shuffle
+  shuffle,
+  schemeCategory20
 } from "d3";
 import NodeGroup from "react-move/NodeGroup";
 import { sortBy } from "lodash";
 
-const colors = scaleOrdinal().range([
-  "#a6cee3",
-  "#1f78b4",
-  "#b2df8a",
-  "#33a02c",
-  "#fb9a99",
-  "#e31a1c",
-  "#fdbf6f",
-  "#ff7f00",
-  "#cab2d6",
-  "#6a3d9a"
-]);
+const colors = scaleOrdinal(schemeCategory20);
 
 //  SVG Layout
 const view = [510, 510]; // [width, height]
-const trbl = [10, 10, 10, 10]; // [top, right, bottom, left] margins
+const margins = [10, 10, 10, 10]; // [top, right, bottom, left] margins
 
-// Adjusted dimensions [width, height]
 const dims = [
-  view[0] - trbl[1] - trbl[3],
-  view[1] - trbl[0] - trbl[2]
+  view[0] - margins[1] - margins[3],
+  view[1] - margins[0] - margins[2]
 ];
 
 const mockData = [
@@ -65,15 +54,13 @@ const mockData = [
   }
 ];
 
-let counter = 0;
-
 const radius = dims[1] / 2 * 0.7;
 
 const pieLayout = pie()
   .value(d => d.value)
   .sort(null);
 
-const innerArcPath = arc()
+const arcPath = arc()
   .innerRadius(radius * 0.4)
   .outerRadius(radius * 1.0);
 
@@ -107,13 +94,12 @@ class App extends Component {
   render() {
     const { arcs } = this.state;
 
-    // console.log({arcs})
-
     return (
       <div>
         <button onClick={this.update}>Update</button>
         <svg height={dims[0]} width={dims[1]}>
           <g transform={`translate(${dims[0] / 2}, ${dims[1] / 2})`}>
+
             <NodeGroup
               data={arcs}
               keyAccessor={d => d.data.name}
@@ -132,14 +118,14 @@ class App extends Component {
               })}
             >
               {nodes => {
-                console.log(++counter)
                 return (
                   <g>
                     {nodes.map(({ key, data, state }) => {
+                      // if ( key === "Skynoodle") console.log({ key, data, state })
                       return (
                         <g key={key}>
                           <path
-                            d={innerArcPath(state)}
+                            d={arcPath(state)}
                             fill={colors(data.data.name)}
                             opacity={0.9}
                           />
@@ -150,6 +136,7 @@ class App extends Component {
                 );
               }}
             </NodeGroup>
+
           </g>
         </svg>
       </div>
