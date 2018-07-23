@@ -21,21 +21,18 @@ const arcPath = arc()
 
 /************** React-Move methods **************/
 const start = ({ startAngle }) => {
-  // console.log("Start!");
   return {
     startAngle: startAngle,
     endAngle: startAngle
   };
 };
 const enter = ({ endAngle }) => {
-  // console.log("Enter!");
   return {
     endAngle: [endAngle],
     timing: { duration: 2000, ease: easeExpOut }
   };
 };
 const update = ({ startAngle, endAngle }) => {
-  // console.log("Update!");
   return {
     startAngle: [startAngle],
     endAngle: [endAngle],
@@ -213,8 +210,6 @@ class App extends Component {
                 return (
                   <g>
                     {nodes.map(({ key, data, state }) => {
-                      {/* console.log({ key, data, state });
-                      debugger */}
                       return (
                         <path
                           d={arcPath(state)}
