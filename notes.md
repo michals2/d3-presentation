@@ -27,6 +27,23 @@ const chartData = {
 
 
 # Todo
+[x] change ordinal scale color to linear (so that more nodes can be added)
+[x] recenter donut on SVG
 
-[ ] change ordinal scale color to linear (so that more nodes can be added)
-[ ] recenter donut on SVG
+
+
+
+
+# React Move Notes
+
+* NodeGroup props
+  * data
+  * keyAccessor
+  * start
+  * enter
+  * update
+  * leave
+
+## NodeGroup Lifecycle
+
+start --> enter --> update --> leave
