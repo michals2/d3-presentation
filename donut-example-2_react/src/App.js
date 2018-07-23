@@ -43,93 +43,106 @@ const update = ({ startAngle, endAngle }) => {
   };
 };
 
-/** Other helper methods **/
+/************* Other helper methods ************/
 const generateRandomColor = () => `hsl(${Math.random() * 360},100%,50%)`;
+const findItemIndexByName = (name, items) => items.findIndex(item => item.name === name);
 
 class App extends Component {
   constructor() {
     super();
-    const initData = {
-      445: {
+    const initData = [
+      {
         name: "apple",
         qty: 2,
-        id: 445,
         color: generateRandomColor()
       },
-      446: {
+      {
         name: "orange",
         qty: 6,
-        id: 446,
         color: generateRandomColor()
       },
-      447: {
+      {
         name: "banana",
         qty: 3,
-        id: 447,
         color: generateRandomColor()
       }
-    };
+    ];
 
     this.state = {
-      cart: pieLayout(Object.values(initData)),
+      cart: pieLayout(initData),
       data: initData,
-      form: { name: null, qty: null, id: null }
+      form: { name: "", qty: "" }
     };
   }
 
-  incrementItem = id => {
+  incrementItem = name => {
     const { data } = this.state;
-    const item = data[id];
+    const itemIndex = findItemIndexByName(name, data);
 
-    const newData = { ...data };
-    newData[id] = {
-      ...item,
-      qty: item.qty + 1
+    const newItem = {
+      ...data[itemIndex],
+      qty: +data[itemIndex].qty + 1
     };
+    
+    const newData = [
+      ...data.slice(0, itemIndex),
+      newItem,
+      ...data.slice(itemIndex + 1),
+    ];
 
     this.setState({
-      cart: pieLayout(Object.values(newData)),
+      cart: pieLayout(newData),
       data: newData
     });
   };
 
-  decrementItem = id => {
+  decrementItem = name => {
     const { data } = this.state;
-    const item = data[id];
+    const itemIndex = findItemIndexByName(name, data);
 
-    const newData = { ...data };
-    newData[id] = {
-      ...item,
-      qty: item.qty - 1
+    const newItem = {
+      ...data[itemIndex],
+      qty: +data[itemIndex].qty - 1
     };
+    
+    const newData = [
+      ...data.slice(0, itemIndex),
+      newItem,
+      ...data.slice(itemIndex + 1),
+    ];
 
     this.setState({
-      cart: pieLayout(Object.values(newData)),
+      cart: pieLayout(newData),
       data: newData
     });
   };
 
-  removeItem = id => {
+  removeItem = name => {
     const { data } = this.state;
+    const itemIndex = findItemIndexByName(name, data);
 
-    const newData = { ...data };
-    delete newData[id];
-
+    const newData = [
+      ...data.slice(0, itemIndex),
+      ...data.slice(itemIndex + 1),
+    ]
+    
     this.setState({
-      cart: pieLayout(Object.values(newData)),
+      cart: pieLayout(newData),
       data: newData
     });
   };
 
   addItem = () => {
     const { data } = this.state;
-    const { name, qty, id } = this.state.form;
+    const { name, qty } = this.state.form;
 
-    const newData = { ...data };
-    newData[id] = { name, qty, id };
+    const newData = [ 
+      ...data,
+      { name, qty, color: generateRandomColor() }
+    ];
 
     this.setState({
-      cart: pieLayout(Object.values(newData)),
+      cart: pieLayout(newData),
       data: newData
     });
   };
@@ -146,7 +159,7 @@ class App extends Component {
   render() {
     const { cart } = this.state;
     const { incrementItem, decrementItem, removeItem, addItem } = this;
-    const { name, qty, id } = this.state.form;
+    const { name, qty } = this.state.form;
 
     return (
       <div>
@@ -164,13 +177,6 @@ class App extends Component {
           value={qty}
           onChange={this.handleChange}
         />
-        <input
-          type="text"
-          id="id"
-          placeholder="id"
-          value={id}
-          onChange={this.handleChange}
-        />
         <button onClick={addItem}>add item</button>
         <table>
           <tbody>
@@ -185,9 +191,9 @@ class App extends Component {
                   <td>{e.data.name}</td>
                   <td>{e.data.qty}</td>
                   <td>
-                    <button onClick={() => incrementItem(e.data.id)}>+</button>
-                    <button onClick={() => decrementItem(e.data.id)}>-</button>
-                    <button onClick={() => removeItem(e.data.id)}>x</button>
+                    <button onClick={() => incrementItem(e.data.name)}>+</button>
+                    <button onClick={() => decrementItem(e.data.name)}>-</button>
+                    <button onClick={() => removeItem(e.data.name)}>x</button>
                   </td>
                 </tr>
               );
@@ -198,7 +204,7 @@ class App extends Component {
           <g transform={`translate(${dims[0] / 2}, ${dims[1] / 2})`}>
             <NodeGroup
               data={cart}
-              keyAccessor={d => d.data.id}
+              keyAccessor={d => d.data.name}
               start={start}
               enter={enter}
               update={update}
@@ -207,7 +213,8 @@ class App extends Component {
                 return (
                   <g>
                     {nodes.map(({ key, data, state }) => {
-                      console.log({ data });
+                      {/* console.log({ key, data, state });
+                      debugger */}
                       return (
                         <path
                           d={arcPath(state)}
