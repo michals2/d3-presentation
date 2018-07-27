@@ -39,6 +39,14 @@ const update = ({ startAngle, endAngle }) => {
     timing: { duration: 2000, ease: easeExpOut }
   };
 };
+const leave = ({ startAngle, endAngle }) => {
+  const midAngle = (startAngle + endAngle) / 2;
+  return {
+    startAngle: [midAngle],
+    endAngle: [midAngle],
+    timing: { duration: 2000, ease: easeExpOut }
+  };
+};
 
 /************* Other helper methods ************/
 const generateRandomColor = () => `hsl(${Math.random() * 360},100%,50%)`;
@@ -205,6 +213,7 @@ class App extends Component {
               start={start}
               enter={enter}
               update={update}
+              leave={leave}
             >
               {nodes => {
                 return (
